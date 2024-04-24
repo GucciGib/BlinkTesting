@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Responsive Flashing Dots</title>
+<style>
+    canvas {
+        display: block; /* Removes the margin in the bottom of the canvas */
+        width: 100%;    /* These two settings ensure the canvas */
+        height: 100%;   /* uses full screen */
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+</style>
+</head>
+<body>
+<canvas></canvas>
+<script>
+    const canvas = document.querySelector('canvas');
+    const ctx = canvas.getContext('2d');
+
+	const dot_radius=30;
+	const dot_color_on='red';
+	const dot_color_off='#dedede';
+	
+    // Initial canvas size setup
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas(); // Set initial size
+
+    // Dot properties
+    const dotRadius = dot_radius;
+    let dotY; // Middle of the screen vertically
+
+    // State of the dots' visibility
+    let leftDotVisible = true;
+    let rightDotVisible = false;
+
+    function drawDot(x, y, visible) {
+		ctx.beginPath();
+		console.log(x,y);
+		ctx.arc(x, y, dotRadius, 0, Math.PI * 2, false);
+		ctx.fillStyle = visible ? dot_color_on : dot_color_off;
+		ctx.fill();
+    }
+
+    function updateCanvas() {
+        dotX = canvas.width / 2; // Update dotY during each redraw to handle vertical resize
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+
+		let height=Math.min(canvas.width,canvas.height);
+		
+        // Draw the left dot
+        drawDot(dotX,(canvas.height/2)-height/2+dotRadius,leftDotVisible);
+
+        // Draw the right dot
+        drawDot(dotX,(canvas.height/2)+height/2-dotRadius, rightDotVisible);
+
+        // Toggle visibility
+        leftDotVisible = !leftDotVisible;
+        rightDotVisible = !rightDotVisible;
+    }
+
+    // Set the interval for flashing
+    setInterval(updateCanvas, 1000); // Adjust the 1000ms delay to speed up/slow down
+</script>
+</body>
+</html>

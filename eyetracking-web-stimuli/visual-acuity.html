@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Drawing</title>
+<style>
+  body, html {
+    height: 100%;
+    margin: 0;
+	padding:0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f0f0f0;
+  }
+  canvas {
+  }
+</style>
+</head>
+<body>
+    <canvas id="acuityCanvas" width="800" height="600"></canvas>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.getElementById('acuityCanvas');
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    const ctx = canvas.getContext('2d');
+
+    // List of potential letters to draw
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let currentFontSize = 200; // Start from a large font size
+
+    function drawLetter() {
+        // Clear the canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Choose a random letter
+        const letter = letters[Math.floor(Math.random() * letters.length)];
+
+        // Set the font size and face
+        ctx.font = `${currentFontSize}px Arial`;
+
+        // Calculate width and height of the letter for centering
+        const metrics = ctx.measureText(letter);
+        const letterWidth = metrics.width;
+        const letterHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+
+        // Draw the letter centered
+        ctx.fillText(letter, (canvas.width - letterWidth) / 2, (canvas.height + letterHeight) / 2);
+    }
+
+    // Handle canvas resize
+    function resizeCanvas() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        drawLetter(); // Redraw letter on resize to maintain centering
+    }
+
+    // Handle canvas clicks
+    function handleClick() {
+        currentFontSize = Math.max(currentFontSize - 10, 5); // Decrease font size, minimum 20px
+        drawLetter();
+    }
+
+    // Draw the initial letter
+    drawLetter();
+
+    // Event listeners
+    window.addEventListener('resize', resizeCanvas);
+    canvas.addEventListener('click', handleClick);
+});
+
+	</script>
+</body>
+</html>

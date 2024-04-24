@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Canvas Animation</title>
+    <style>
+        body, html {
+            margin: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        canvas {
+            width: 100%;
+            display: block; /* Removes extra space below the canvas */
+        }
+    </style>
+</head>
+<body>
+    <canvas id="myCanvas"></canvas>
+    <script>
+	
+const canvas = document.getElementById('myCanvas');
+const ctx = canvas.getContext('2d');
+
+let posX = 0;
+let posY; // This will be set based on canvas height
+const speed = 20;
+const angles = [0, 90, 180, 270];
+const alphabet = "UCY";
+let currentLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
+let currentAngle = angles[Math.floor(Math.random() * angles.length)];
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight * 0.5; // Adjust height based on your design preference
+    posY = canvas.height / 2; // Update posY based on new canvas height
+    posX = Math.min(posX, canvas.width); // Ensure posX is not out of bounds after resize
+}
+
+window.addEventListener('resize', resizeCanvas); // Adjust canvas size on window resize
+resizeCanvas(); // Set initial canvas size
+
+function drawLetter() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+
+    ctx.save(); // Save the current context state
+    ctx.translate(posX, posY); // Move to the current position
+    ctx.rotate(currentAngle * Math.PI / 180); // Rotate context by the current angle
+
+    // Set styles
+    ctx.font = '48px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(currentLetter, 0, 0); // Draw the letter at the origin
+
+    ctx.restore(); // Restore the context to its original state
+
+    // Update position for horizontal movement
+    posX += speed;
+    if (posX > canvas.width + 50) { // Adding buffer to fully exit the canvas
+        posX = -50; // Reset to start off canvas if it goes out of bounds
+        currentLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
+        currentAngle = angles[Math.floor(Math.random() * angles.length)];
+    }
+
+    requestAnimationFrame(drawLetter); // Request next frame of the animation
+}
+
+drawLetter(); // Start the animation
+
+	</script>
+</body>
+</html>

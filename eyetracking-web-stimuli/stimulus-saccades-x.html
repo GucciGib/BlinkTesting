@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Flashing Dots</title>
+    <link href="style.css" rel="stylesheet">
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="container">
+        <button id="toggle-button">Controls</button>
+        <div id="control-panel">
+
+            <div id="theme-select" style="position: relative; display: flex; align-items: center;">
+                <label for="checkbox" style="margin-right:5px;">Theme Select:</label>
+                <input type="checkbox" class="checkbox" id="checkbox">
+                <label for="checkbox" class="checkbox-label">
+                    <span class="ball"></span>
+                </label>
+            </div>
+
+            <div id="advanced-settings-toggle">
+                Advanced Theme: <span>&#9660;</span>
+            </div>
+            <div id="advanced-settings">
+                <div class="control-item">
+                    <label for="background-color-select" style="margin-bottom:1px;">Background Color:</label>
+                    <select id="background-color-select">
+                        <option value="black" selected>Black</option>
+                        <option value="white">White</option>
+                        <option value="red">Red</option>
+                        <option value="#0083ed">Blue</option>
+                        <option value="green">Green</option>
+                    </select>
+                </div>
+                <div class="control-item">
+                    <label for="dot-color-select">Dot Color:</label>
+                    <select id="dot-color-select">
+                        <option value="black">Black</option>
+                        <option value="white">White</option>
+                        <option value="red">Red</option>
+                        <option value="#0083ed" selected>Blue</option>
+                        <option value="green">Green</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control-item">
+                <label for="dot-radius">Dot Radius:</label>
+                <input type="range" id="dot-radius" min="1" max="60" value="30">
+            </div>
+
+            <div class="control-item">
+                <label for="dot-speed">Dot Speed:</label>
+                <input type="range" id="dot-speed" min="1" max="2000" value="1000">
+            </div>
+
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const canvas = document.querySelector('canvas');
+            const ctx = canvas.getContext('2d');
+
+            let backgroundColor = document.getElementById('background-color-select').value;
+            let dotColorOn = document.getElementById('dot-color-select').value;
+            let dotColorOff = '#C8C8C8';
+            let theme = "dark";
+            
+            let dotRadius = parseInt(document.getElementById('dot-radius').value, 10);
+            // Set initial speed based on the slider's initial position, inverted calculation
+            let flashSpeed = Math.max(300, 2000 - parseInt(document.getElementById('dot-speed').value, 10));
+
+            let lastFlashTime = 0;
+            let leftDotVisible = true;
+            let rightDotVisible = false;
+
+            // Toggle control panel
+            const toggleButton = document.getElementById('toggle-button');
+            const controlPanel = document.getElementById('control-panel');
+            toggleButton.addEventListener('click', function () {
+                const isDisplayed = controlPanel.style.display === 'flex';
+                controlPanel.style.display = isDisplayed ? 'none' : 'flex';
+            });
+
+            // Toggle advanced theme dropdown
+            document.getElementById('advanced-settings-toggle').addEventListener('click', function () {
+                var settings = document.getElementById('advanced-settings');
+                if (settings.style.maxHeight !== '0px' && settings.style.maxHeight !== '') {
+                    settings.style.maxHeight = '0px';
+                } else {
+                    settings.style.maxHeight = '175px';
+                }
+            });
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            function updateVariables() {
+                backgroundColor = document.getElementById('background-color-select').value;
+                dotColorOn = document.getElementById('dot-color-select').value;
+                dotRadius = parseInt(document.getElementById('dot-radius').value, 10);
+                // Invert the slider and cap the interval at no less than 50ms.
+                flashSpeed = Math.max(300, 2000 - parseInt(document.getElementById('dot-speed').value, 10));
+
+                requestAnimationFrame(updateCanvas); // Ensure immediate application of changes
+            }
+
+            function changeTheme() {
+    theme = theme === 'dark' ? 'light' : 'dark';
+
+    const backgroundSelect = document.getElementById('background-color-select');
+    const dotSelect = document.getElementById('dot-color-select');
+
+    if (theme === 'light') {
+        backgroundColor = 'white'; // Corrected variable name
+        dotColorOn = 'blue';       // Corrected variable name
+        dotColorOff = '#dedede';    // Ensure this is set appropriately
+
+        backgroundSelect.value = 'white';
+        dotSelect.value = 'black';
+    } else {
+        backgroundColor = 'black';  // Corrected variable name
+        dotColorOn = 'blue';       // Corrected variable name
+        dotColorOff = '#969696';    // Ensure this is set appropriately
+
+        backgroundSelect.value = 'black';
+        dotSelect.value = 'white';
+    }
+
+    const label = document.querySelector('.checkbox-label');
+    const ball = document.querySelector('.checkbox-label .ball');
+    const controlPanel = document.querySelector('#control-panel');
+
+    label.style.backgroundColor = theme === 'light' ? '#DDD' : '#111';
+    ball.style.backgroundColor = theme === 'light' ? '#333' : '#FFF';
+    controlPanel.style.backgroundColor = theme === 'light' ? '#F0F0F0' : '#F5F5F5';
+
+    updateCanvas(0); // Call updateCanvas instead of draw to re-render with new settings
+}
+
+            function draw(timestamp) {
+                const deltaTime = timestamp - lastFlashTime;
+
+                if (deltaTime >= flashSpeed) {
+                    leftDotVisible = !leftDotVisible;
+                    rightDotVisible = !rightDotVisible;
+                    lastFlashTime = timestamp;
+                }
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = backgroundColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                const centerY = canvas.height / 2;
+                const spacing = canvas.width / 4;
+                drawDot(spacing, centerY, dotRadius, leftDotVisible);
+                drawDot(3 * spacing, centerY, dotRadius, rightDotVisible);
+
+                requestAnimationFrame(draw);
+            }
+
+            function drawDot(x, y, radius, visible) {
+                ctx.fillStyle = visible ? dotColorOn : dotColorOff; 
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+
+            document.getElementById('checkbox').addEventListener('change', changeTheme);
+            document.getElementById('dot-radius').addEventListener('input', updateVariables);
+            document.getElementById('dot-speed').addEventListener('input', updateVariables);
+            document.getElementById('background-color-select').addEventListener('change', updateVariables);
+            document.getElementById('dot-color-select').addEventListener('change', updateVariables);
+
+            requestAnimationFrame(draw); // Start the animation
+        });
+
+    </script>
+</body>
+
+</html>

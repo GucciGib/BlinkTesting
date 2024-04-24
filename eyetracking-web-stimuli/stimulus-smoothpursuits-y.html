@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Responsive Dot Animation</title>
+<style>
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden; /* Prevent scrollbars */
+  }
+  canvas {
+    width: 100%;
+    height: auto;
+    display: block; /* Removes bottom margin/gap */
+  }
+</style>
+</head>
+<body>
+<canvas id="myCanvas"></canvas>
+<script>
+const canvas = document.getElementById('myCanvas');
+const ctx = canvas.getContext('2d');
+
+let dotRadius = 10;
+let dotX; // Start position of the dot
+let dotY; // Set dynamically based on canvas height
+let speed = 20; // Speed of the dot movement
+let direction = 1; // Direction of movement: 1 for right, -1 for left
+
+function setCanvasSize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  dotX = canvas.width / 2; // Middle of the canvas
+}
+
+function drawDot() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+  ctx.beginPath();
+  ctx.arc(dotX, dotY, dotRadius, 0, Math.PI * 2, true); // Draw the dot
+  ctx.fillStyle = 'red';
+  ctx.fill();
+  ctx.closePath();
+  
+	let height=Math.min(canvas.width,canvas.height);
+	minHeight=(canvas.height/2)-height/2;
+	maxHeight=(canvas.height/2)+height/2;
+	
+	if(!dotY) dotY=minHeight;
+  // Update the X position of the dot
+  dotY += speed * direction;
+  
+  if (dotY + dotRadius >= maxHeight || dotY - dotRadius <= minHeight) {
+    direction *= -1; // Invert the direction of travel when hitting a boundary
+  }
+
+  requestAnimationFrame(drawDot); // Request to do this again ASAP
+}
+
+window.addEventListener('resize', setCanvasSize); // Handle window resize
+setCanvasSize(); // Set initial canvas size
+drawDot(); // Start the animation
+</script>
+</body>
+</html>

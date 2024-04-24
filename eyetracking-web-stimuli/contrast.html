@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Drawing</title>
+<style>
+  body, html {
+    height: 100%;
+    margin: 0;
+	padding:0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f0f0f0;
+  }
+  canvas {
+  }
+</style>
+</head>
+<body>
+    <canvas id="myCanvas" width="800" height="600"></canvas>
+    <script>
+const canvas = document.getElementById('myCanvas');
+const ctx = canvas.getContext('2d');
+
+// Set initial dimensions
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();  // Set initial size
+window.onresize = resizeCanvas;  // Resize on window resize
+
+let radius = 200;
+const numberOfLines = 40;
+let lineOpacity = Array(numberOfLines).fill(0.0);
+
+function drawCircle() {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    radius = Math.min(canvas.width, canvas.height) / 4;  // Dynamic radius based on canvas size
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw the gray circle
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+    ctx.fillStyle = `rgba(0, 0, 0, 0.5)`;
+    ctx.fill();
+    ctx.clip();  // Clip to the bounds of the circle
+
+    // Draw horizontal lines within the circle
+    const lineSpacing = (radius * 2) / numberOfLines;
+    for (let i = 0; i < numberOfLines; i++) {
+        let y = centerY - radius + i * lineSpacing;
+        ctx.beginPath();
+        ctx.moveTo(centerX - radius, y);
+        ctx.lineTo(centerX + radius, y);
+        ctx.strokeStyle = `rgba(0, 0, 0, ${lineOpacity[i]})`;
+        ctx.stroke();
+    }
+
+    // Update line opacities for fading effect
+    lineOpacity = lineOpacity.map(opacity => Math.max(opacity + 0.001, 0));
+
+    // Restore context state to remove clipping for next frame
+    ctx.restore();
+    ctx.save();
+
+    // Use requestAnimationFrame to animate
+    requestAnimationFrame(drawCircle);
+}
+
+// Start the animation
+ctx.save();  // Save the initial state for clipping
+drawCircle();
+
+	</script>
+</body>
+</html>
